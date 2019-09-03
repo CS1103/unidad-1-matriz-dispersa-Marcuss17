@@ -17,24 +17,28 @@ Matrix::Matrix(int rows, int columns) {
     }
 }
 
-void Matrix::fillMatrix() {
-    /*int zCount = 0;
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < columns; j++){
-            if(zCount == 0.5*rows*columns){
-                mMatrix[i][j] = 1;
-            }
-            else{
-                mMatrix[i][j] = (rand()%2);
-                if(mMatrix[i][j] == 0){
-                    zCount++;
+void Matrix::fillMatrix(int fillOption) {
+    if(fillOption == 0){
+        int zCount = 0;
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < columns; j++){
+                if(zCount == 0.5*rows*columns){
+                    mMatrix[i][j] = (rand()%10+1);
+                }
+                else{
+                    mMatrix[i][j] = (rand()%11);
+                    if(mMatrix[i][j] == 0){
+                        zCount++;
+                    }
                 }
             }
         }
-    }*/
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j < columns; j++){
-            cin >> mMatrix[i][j];
+    }
+    else{
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < columns; j++){
+                cin >> mMatrix[i][j];
+            }
         }
     }
 }
@@ -49,7 +53,10 @@ void Matrix::showMatrix() {
 }
 
 Matrix Matrix::operator+(const Matrix& Matrix2) {
-    if((rows = Matrix2.rows) && (columns == Matrix2.columns)){
+    try{
+        if((rows != Matrix2.rows) || (columns != Matrix2.columns)){
+            throw 1;
+        }
         Matrix Matrix3(rows,columns);
         for(int i = 0; i < rows;i++){
             for(int j = 0; j < columns; j++){
@@ -57,31 +64,45 @@ Matrix Matrix::operator+(const Matrix& Matrix2) {
             }
         }
         return Matrix3;
-    }
-    else{
-        Matrix Matrix3(rows,columns);
-        for(int i = 0; i < rows;i++){
-            for(int j = 0; j < columns; j++){
-                Matrix3.mMatrix[i][j] = mMatrix[i][j];
-            }
-        }
-        cout <<"Not able to sum, matrixes must be from the same order.";
-        return Matrix3;
+
+    }catch(int e){
+        cout <<"Not able to sum, matrixes must be from the same order." << endl;
     }
 }
 
 Matrix Matrix::operator*(const Matrix & Matrix2) {
-    Matrix Matrix3(rows,Matrix2.columns);
-    for(int i = 0; i < Matrix3.rows; i++){
-        for(int j = 0; j < Matrix3.columns; j++){
-            Matrix3.mMatrix[i][j]=0;
-            for(int k = 0; k < Matrix3.columns; k++){
-                Matrix3.mMatrix[i][j] += mMatrix[i][k] * Matrix2.mMatrix[k][j];
-            }
+    try {
+        if (columns != Matrix2.rows) {
+            throw 2;
         }
+        Matrix Matrix3(rows, Matrix2.columns);
+        if (rows == Matrix2.columns) {
+            for (int i = 0; i < Matrix3.rows; i++) {
+                for (int j = 0; j < Matrix3.columns; j++) {
+                    Matrix3.mMatrix[i][j] = 0;
+                    for (int k = 0; k < Matrix3.columns; k++) {
+                        Matrix3.mMatrix[i][j] += mMatrix[i][k] * Matrix2.mMatrix[k][j];
+                    }
+                }
+            }
+            return Matrix3;
+        } else if (rows != Matrix2.columns) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < columns; j++) {
+                    for (int k = 0; k < Matrix3.columns; k++) {
+                        Matrix3.mMatrix[i][k] += mMatrix[i][j] * Matrix2.mMatrix[j][k];
+                    }
+                }
+            }
+            return Matrix3;
+        }
+    }catch(int e){
+        Matrix Matrix3(0,0);
+        cout <<"Not able to multiply number of columns from Matrix 1 must be the same as number of rows from Matrix2." << endl;
+        return Matrix3;
     }
-    return Matrix3;
 }
+
 
 
 Matrix Matrix::operator*(int number) {
@@ -89,10 +110,6 @@ Matrix Matrix::operator*(int number) {
     for(int i =0; i < rows; i++){
         for(int j = 0; j < columns;j++){
             Matrix2.mMatrix[i][j] = mMatrix[i][j];
-        }
-    }
-    for(int i =0; i < rows; i++){
-        for(int j = 0; j < columns;j++){
             Matrix2.mMatrix[i][j] = Matrix2.mMatrix[i][j]*number;
         }
     }
@@ -114,16 +131,13 @@ void Matrix::transpose() {
 
 }
 
-int Matrix::getRows() {
-    return rows;
-}
-
-int Matrix::getColumns() {
-    return columns;
+Matrix::Proxy Matrix::operator[](int index) {
+    return Proxy(mMatrix[index]);
 }
 
 
-
-
+int Matrix::Proxy::operator[](int index) {
+    return array[index];
+}
 
 
